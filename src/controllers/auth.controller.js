@@ -54,3 +54,45 @@ async function register(req, res, next) {
     next(err);
   }
 }
+
+async function login(req, res, next) {
+  try {
+    const { email, password } = req.body;
+
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    const INVALID_MSG = "Invalid email or password.";
+
+    if (!user) return res.status(401).json({ message: INVALID_MSG });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(401).json({ message: INVALID_MSG });
+
+    if (user.status === "PENDING") {
+      return res.status(403).json({
+        message:
+          "Your identity is still under review. You will be notified by email once it is confirmed.",
+        status: "PENDING",
+      });
+    }
+
+    if (user.status === "REJECTED") {
+      return res.status(403).json({
+        message:
+          "Your identity verification was rejected. Please contact support.",
+        status  : "REJECTED",
+        reason  : user.rejectionReason || null,
+      });
+    }
+
+    const token = signToken({ id: user.id, email: user.email, role: user.role });
+
+    res.json({
+      message: "Login successful.",
+      token,
+      user   : sanitizeUser(user),
+    });
+  } catch (err) {
+    next(err);
+  }
+}
