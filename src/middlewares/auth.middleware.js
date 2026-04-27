@@ -1,5 +1,5 @@
 import { verifyToken } from "../utils/jw"
-import { prisma } from "../utils/prisma"
+import prisma from "../utils/prisma"
 
 async function authenticate(req, res, next) {
   try {

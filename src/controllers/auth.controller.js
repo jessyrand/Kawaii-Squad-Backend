@@ -1,5 +1,5 @@
-import { bcrypt } from "bcryptjs";
-import { prisma } from "../utils/prisma"
+import bcrypt from "bcryptjs";
+import prisma from "../utils/prisma"
 import { signToken } from "../utils/jwt"
 import { uploadIdPhoto } from "../utils/supabase"
 

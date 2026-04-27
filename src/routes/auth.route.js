@@ -1,0 +1,46 @@
+import express from "express";
+import { body } from "express-validator";
+
+const router = express.Router();
+
+
+const upload                    = require("../middleware/upload.middleware");
+const { validate }              = require("../middleware/validate.middleware");
+const { authenticate }          = require("../middleware/auth.middleware");
+const { register, login, me }   = require("../controllers/auth.controller");
+
+const registerValidation = [
+  body("fullName")    .trim().notEmpty().withMessage("Full name is required."),
+  body("fatherName")  .trim().notEmpty().withMessage("Father's name is required."),
+  body("motherName")  .trim().notEmpty().withMessage("Mother's name is required."),
+  body("dateOfBirth") .isISO8601().toDate().withMessage("Date of birth must be a valid ISO date (YYYY-MM-DD)."),
+  body("placeOfBirth").trim().notEmpty().withMessage("Place of birth is required."),
+  body("email")       .isEmail().normalizeEmail().withMessage("A valid email is required."),
+  body("password")
+    .isLength({ min: 8 })
+    .withMessage("Password must be at least 8 characters.")
+    .matches(/[A-Z]/).withMessage("Password must contain at least one uppercase letter.")
+    .matches(/[0-9]/).withMessage("Password must contain at least one number."),
+];
+
+router.post(
+  "/register",
+  upload.single("idPhoto"),       // Field name: "idPhoto"
+  registerValidation,
+  validate,
+  register
+);
+
+router.post(
+  "/login",
+  [
+    body("email")   .isEmail().normalizeEmail().withMessage("A valid email is required."),
+    body("password").notEmpty().withMessage("Password is required."),
+  ],
+  validate,
+  login
+);
+
+router.get("/me", authenticate, me);
+
+module.exports = router;
