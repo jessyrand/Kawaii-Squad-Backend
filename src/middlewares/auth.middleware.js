@@ -1,5 +1,5 @@
-const { verifyToken } = require("../utils/jwt");
-const prisma           = require("../utils/prisma");
+import { verifyToken } from "../utils/jw"
+import { prisma } from "../utils/prisma"
 
 async function authenticate(req, res, next) {
   try {
