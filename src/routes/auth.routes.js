@@ -4,10 +4,10 @@ import { body } from "express-validator";
 const router = express.Router();
 
 
-const upload                    = require("../middleware/upload.middleware");
-const { validate }              = require("../middleware/validate.middleware");
-const { authenticate }          = require("../middleware/auth.middleware");
-const { register, login, me }   = require("../controllers/auth.controller");
+import upload from "../middleware/upload.middleware";
+import { validate } from "../middleware/validate.middleware";
+import { authenticate } from "../middleware/auth.middleware";
+import { register, login, me } from "../controllers/auth.controller";
 
 const registerValidation = [
   body("fullName")    .trim().notEmpty().withMessage("Full name is required."),
