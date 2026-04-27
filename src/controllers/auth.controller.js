@@ -1,7 +1,7 @@
-const bcrypt              = require("bcryptjs");
-const prisma              = require("../utils/prisma");
-const { signToken }       = require("../utils/jwt");
-const { uploadIdPhoto }   = require("../utils/supabase");
+import { bcrypt } from "bcryptjs";
+import { prisma } from "../utils/prisma"
+import { signToken } from "../utils/jwt"
+import { uploadIdPhoto } from "../utils/supabase"
 
 function sanitizeUser(user) {
   const { password, ...safe } = user;
@@ -96,3 +96,9 @@ async function login(req, res, next) {
     next(err);
   }
 }
+
+async function me(req, res) {
+  res.json({ user: sanitizeUser(req.user) });
+}
+
+module.exports = { register, login, me };
