@@ -1,5 +1,8 @@
 {
   "type": "module",
+  "scripts": {
+    "dev": "nodemon src/app.js"
+  },
   "dependencies": {
     "@prisma/client": "^6.19.3",
     "@supabase/supabase-js": "^2.105.0",
