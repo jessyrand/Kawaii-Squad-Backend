@@ -1,14 +1,17 @@
 import bcrypt from "bcryptjs";
-import prisma from "../utils/prisma"
-import { signToken } from "../utils/jwt"
-import { uploadIdPhoto } from "../utils/supabase"
+import prisma from "../utils/prisma.js";
+import { signToken } from "../utils/jwt.js";
+import { uploadIdPhoto } from "../utils/supabase.js";
 
 function sanitizeUser(user) {
   const { password, ...safe } = user;
   return safe;
 }
 
-async function register(req, res, next) {
+// ---------------------------------------------------------------------------
+// POST /api/auth/register
+// ---------------------------------------------------------------------------
+export async function register(req, res, next) {
   try {
     const {
       fullName,
@@ -20,8 +23,10 @@ async function register(req, res, next) {
       password,
     } = req.body;
 
+    // Hash password
     const hashed = await bcrypt.hash(password, 12);
 
+    // Upload ID photo to Supabase Storage (file is required at registration)
     let idPhotoUrl = null;
     if (req.file) {
       idPhotoUrl = await uploadIdPhoto(
@@ -55,7 +60,10 @@ async function register(req, res, next) {
   }
 }
 
-async function login(req, res, next) {
+// ---------------------------------------------------------------------------
+// POST /api/auth/login
+// ---------------------------------------------------------------------------
+export async function login(req, res, next) {
   try {
     const { email, password } = req.body;
 
@@ -68,6 +76,9 @@ async function login(req, res, next) {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ message: INVALID_MSG });
 
+    // -----------------------------------------------------------------------
+    // STRICT RULE: Block PENDING and REJECTED users from obtaining a token
+    // -----------------------------------------------------------------------
     if (user.status === "PENDING") {
       return res.status(403).json({
         message:
@@ -85,6 +96,7 @@ async function login(req, res, next) {
       });
     }
 
+    // Issue JWT
     const token = signToken({ id: user.id, email: user.email, role: user.role });
 
     res.json({
@@ -97,8 +109,9 @@ async function login(req, res, next) {
   }
 }
 
-async function me(req, res) {
+// ---------------------------------------------------------------------------
+// GET /api/auth/me  (requires authenticate middleware)
+// ---------------------------------------------------------------------------
+export async function me(req, res) {
   res.json({ user: sanitizeUser(req.user) });
 }
-
-module.exports = { register, login, me };

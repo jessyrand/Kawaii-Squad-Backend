@@ -1,7 +1,4 @@
-import { verifyToken } from "../utils/jw"
-import prisma from "../utils/prisma"
-
-async function authenticate(req, res, next) {
+export async function authenticate(req, res, next) {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -24,6 +21,7 @@ async function authenticate(req, res, next) {
       return res.status(401).json({ message: "User belonging to this token no longer exists." });
     }
 
+   
     if (user.status === "PENDING") {
       return res.status(403).json({
         message:
@@ -36,8 +34,8 @@ async function authenticate(req, res, next) {
       return res.status(403).json({
         message:
           "Your identity verification was rejected. Please contact support or re-register.",
-        status  : "REJECTED",
-        reason  : user.rejectionReason || null,
+        status: "REJECTED",
+        reason: user.rejectionReason || null,
       });
     }
 
@@ -48,7 +46,15 @@ async function authenticate(req, res, next) {
   }
 }
 
-function requireRole(...roles) {
+/**
+ * requireRole — Factory that produces an RBAC middleware for one or more roles.
+ *
+ * Usage:  requireRole("ADMIN")
+ * requireRole("ADMIN", "USER")
+ *
+ * Must be used AFTER authenticate.
+ */
+export function requireRole(...roles) {
   return (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({ message: "Not authenticated." });
@@ -61,5 +67,3 @@ function requireRole(...roles) {
     next();
   };
 }
-
-module.exports = { authenticate, requireRole };
