@@ -1,3 +1,7 @@
+// =============================================================================
+// src/utils/jwt.js — JWT Sign & Verify Helpers
+// =============================================================================
+
 import jwt from "jsonwebtoken";
 
 const SECRET  = process.env.JWT_SECRET;
@@ -10,7 +14,7 @@ if (!SECRET) throw new Error("JWT_SECRET environment variable is not set");
  * @param {{ id: string, email: string, role: string }} payload
  * @returns {string} Signed JWT string
  */
-function signToken(payload) {
+export function signToken(payload) {
   return jwt.sign(payload, SECRET, { expiresIn: EXPIRES });
 }
 
@@ -20,8 +24,6 @@ function signToken(payload) {
  * @returns {object} Decoded payload
  * @throws {JsonWebTokenError | TokenExpiredError}
  */
-function verifyToken(token) {
+export function verifyToken(token) {
   return jwt.verify(token, SECRET);
 }
-
-module.exports = { signToken, verifyToken };
