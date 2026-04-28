@@ -1,7 +1,3 @@
-// =============================================================================
-// src/routes/auth.routes.js
-// =============================================================================
-
 import express from "express";
 import { body } from "express-validator";
 
@@ -12,9 +8,6 @@ import { register, login, me } from "../controllers/auth.controller.js";
 
 const router = express.Router();
 
-// ---------------------------------------------------------------------------
-// POST /api/auth/register
-// ---------------------------------------------------------------------------
 const registerValidation = [
   body("fullName").trim().notEmpty().withMessage("Full name is required."),
   body("fatherName").trim().notEmpty().withMessage("Father's name is required."),
@@ -37,9 +30,6 @@ router.post(
   register
 );
 
-// ---------------------------------------------------------------------------
-// POST /api/auth/login
-// ---------------------------------------------------------------------------
 router.post(
   "/login",
   [
@@ -50,9 +40,6 @@ router.post(
   login
 );
 
-// ---------------------------------------------------------------------------
-// GET /api/auth/me  (protected)
-// ---------------------------------------------------------------------------
 router.get("/me", authenticate, me);
 
 export default router;

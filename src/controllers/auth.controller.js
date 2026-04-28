@@ -1,23 +1,13 @@
-// =============================================================================
-// src/controllers/auth.controller.js — Register & Login
-// =============================================================================
-
 import bcrypt from "bcryptjs";
 import prisma from "../utils/prisma.js";
 import { signToken } from "../utils/jwt.js";
 import { uploadIdPhoto } from "../utils/supabase.js";
 
-// ---------------------------------------------------------------------------
-// Helper — strip sensitive fields before returning user data to the client
-// ---------------------------------------------------------------------------
 function sanitizeUser(user) {
   const { password, ...safe } = user;
   return safe;
 }
 
-// ---------------------------------------------------------------------------
-// POST /api/auth/register
-// ---------------------------------------------------------------------------
 export async function register(req, res, next) {
   try {
     const {
@@ -30,10 +20,8 @@ export async function register(req, res, next) {
       password,
     } = req.body;
 
-    // Hash password
     const hashed = await bcrypt.hash(password, 12);
 
-    // Upload ID photo to Supabase Storage (file is required at registration)
     let idPhotoUrl = null;
     if (req.file) {
       idPhotoUrl = await uploadIdPhoto(
@@ -67,16 +55,12 @@ export async function register(req, res, next) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// POST /api/auth/login
-// ---------------------------------------------------------------------------
 export async function login(req, res, next) {
   try {
     const { email, password } = req.body;
 
     const user = await prisma.user.findUnique({ where: { email } });
 
-    // Use a generic message to prevent user enumeration
     const INVALID_MSG = "Invalid email or password.";
 
     if (!user) return res.status(401).json({ message: INVALID_MSG });
@@ -84,9 +68,6 @@ export async function login(req, res, next) {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ message: INVALID_MSG });
 
-    // -----------------------------------------------------------------------
-    // STRICT RULE: Block PENDING and REJECTED users from obtaining a token
-    // -----------------------------------------------------------------------
     if (user.status === "PENDING") {
       return res.status(403).json({
         message:
@@ -117,9 +98,6 @@ export async function login(req, res, next) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// GET /api/auth/me  (requires authenticate middleware)
-// ---------------------------------------------------------------------------
 export async function me(req, res) {
   res.json({ user: sanitizeUser(req.user) });
 }

@@ -1,7 +1,3 @@
-// =============================================================================
-// src/utils/jwt.js — JWT Sign & Verify Helpers
-// =============================================================================
-
 import jwt from "jsonwebtoken";
 
 const SECRET = process.env.JWT_SECRET;

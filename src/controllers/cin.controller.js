@@ -1,15 +1,6 @@
-// =============================================================================
-// src/controllers/cin.controller.js — CIN (Carte d'Identité Nationale) Operations
-// =============================================================================
-
 import prisma from "../utils/prisma.js";
 import { uploadIdPhoto } from "../utils/supabase.js";
 
-// ---------------------------------------------------------------------------
-// POST /api/cin
-// Create a CIN record for the authenticated (CONFIRMED) user.
-// Accepts a multipart/form-data request with an "cinPhoto" file field.
-// ---------------------------------------------------------------------------
 export async function createCin(req, res, next) {
   try {
     const userId = req.user.id;
@@ -50,10 +41,6 @@ export async function createCin(req, res, next) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// GET /api/cin
-// Get the CIN of the currently authenticated user.
-// ---------------------------------------------------------------------------
 export async function getMyCin(req, res, next) {
   try {
     const cin = await prisma.CIN.findUnique({ where: { userId: req.user.id } });
@@ -68,9 +55,6 @@ export async function getMyCin(req, res, next) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Helper — shape the response object
-// ---------------------------------------------------------------------------
 function formatCin(cin, user) {
   return {
     cinId       : cin.id,

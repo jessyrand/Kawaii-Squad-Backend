@@ -1,15 +1,7 @@
-// =============================================================================
-// src/controllers/admin.controller.js — Admin Operations
-// =============================================================================
-
 import bcrypt from "bcryptjs";
 import prisma from "../utils/prisma.js";
 import { sendConfirmationEmail, sendRejectionEmail } from "../services/email.service.js";
 
-// ---------------------------------------------------------------------------
-// POST /api/admin/create
-// Create an admin account — protected by ADMIN_MASTER_SECRET or existing admin
-// ---------------------------------------------------------------------------
 export async function createAdmin(req, res, next) {
   try {
     const { fullName, fatherName, motherName, dateOfBirth, placeOfBirth, email, password } =
@@ -38,10 +30,6 @@ export async function createAdmin(req, res, next) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// GET /api/admin/identities/pending
-// List all PENDING identity submissions
-// ---------------------------------------------------------------------------
 export async function getPendingIdentities(req, res, next) {
   try {
     const page  = Math.max(1, parseInt(req.query.page)  || 1);
@@ -79,10 +67,6 @@ export async function getPendingIdentities(req, res, next) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// GET /api/admin/identities
-// List ALL identities with optional status filter
-// ---------------------------------------------------------------------------
 export async function getAllIdentities(req, res, next) {
   try {
     const { status } = req.query;
@@ -124,10 +108,6 @@ export async function getAllIdentities(req, res, next) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// GET /api/admin/identities/:id
-// Get a single identity detail for review
-// ---------------------------------------------------------------------------
 export async function getIdentityById(req, res, next) {
   try {
     const user = await prisma.user.findUnique({
@@ -156,10 +136,6 @@ export async function getIdentityById(req, res, next) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// PATCH /api/admin/identities/:id/approve
-// Approve a PENDING identity → CONFIRMED + send email
-// ---------------------------------------------------------------------------
 export async function approveIdentity(req, res, next) {
   try {
     const user = await prisma.user.findUnique({ where: { id: req.params.id } });
@@ -176,7 +152,6 @@ export async function approveIdentity(req, res, next) {
       data : { status: "CONFIRMED", rejectionReason: null },
     });
 
-    // Fire-and-forget email
     sendConfirmationEmail({ email: updated.email, fullName: updated.fullName }).catch((e) =>
       console.error("Confirmation email failed:", e.message)
     );
@@ -188,10 +163,6 @@ export async function approveIdentity(req, res, next) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// PATCH /api/admin/identities/:id/reject
-// Reject a PENDING identity → REJECTED + send email with reason
-// ---------------------------------------------------------------------------
 export async function rejectIdentity(req, res, next) {
   try {
     const { reason } = req.body;

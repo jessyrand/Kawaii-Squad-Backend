@@ -1,12 +1,5 @@
-// =============================================================================
-// src/services/email.service.js — Nodemailer Email Service
-// =============================================================================
-
 import nodemailer from "nodemailer";
 
-// ---------------------------------------------------------------------------
-// Transporter — swap this config for any SMTP provider (SendGrid, Resend, etc.)
-// ---------------------------------------------------------------------------
 const transporter = nodemailer.createTransport({
   host   : process.env.SMTP_HOST,
   port   : Number(process.env.SMTP_PORT) || 587,
@@ -23,10 +16,6 @@ transporter.verify().catch((err) =>
 );
 
 const FROM = process.env.EMAIL_FROM || "Digital Identity <noreply@example.com>";
-
-// ---------------------------------------------------------------------------
-// Email Templates
-// ---------------------------------------------------------------------------
 
 /**
  * Send an identity-confirmed email to the user.

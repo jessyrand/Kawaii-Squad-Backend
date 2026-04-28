@@ -1,7 +1,3 @@
-// =============================================================================
-// src/middleware/validate.middleware.js — express-validator Request Validation
-// =============================================================================
-
 import { validationResult } from "express-validator";
 
 /**
