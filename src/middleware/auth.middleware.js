@@ -1,7 +1,3 @@
-// =============================================================================
-// src/middleware/auth.middleware.js — JWT Authentication + RBAC
-// =============================================================================
-
 import { verifyToken } from "../utils/jwt.js";
 import prisma from "../utils/prisma.js";
 
@@ -35,9 +31,6 @@ export async function authenticate(req, res, next) {
       return res.status(401).json({ message: "User belonging to this token no longer exists." });
     }
 
-    // -----------------------------------------------------------------------
-    // Strict access guard — mirrors login restriction (defence-in-depth)
-    // -----------------------------------------------------------------------
     if (user.status === "PENDING") {
       return res.status(403).json({
         message:

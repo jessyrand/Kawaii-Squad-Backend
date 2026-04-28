@@ -1,13 +1,5 @@
-// =============================================================================
-// src/middleware/error.middleware.js — Central Error Handler
-// =============================================================================
-
 import { Prisma } from "@prisma/client";
 
-/**
- * Central Express error handler.
- * Catches errors forwarded via next(err) from any route or middleware.
- */
 export function errorHandler(err, _req, res, _next) {
   console.error("❌ Error:", err);
 

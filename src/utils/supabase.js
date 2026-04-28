@@ -1,14 +1,10 @@
-// =============================================================================
-// src/utils/supabase.js — Supabase Client + Storage Helper (ESM Version)
-// =============================================================================
-
 import { createClient } from "@supabase/supabase-js";
 import { v4 as uuidv4 } from "uuid";
 import path from "path";
 
 export const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY   // Service role bypasses RLS for server-side ops
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 const BUCKET = process.env.SUPABASE_STORAGE_BUCKET || "identity-photos";
