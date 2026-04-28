@@ -1,0 +1,241 @@
+openapi: 3.1.0
+info:
+  title: Digital Identity API — CIN
+  version: 1.0.0
+  description: Endpoints for creating and retrieving a user's Carte d'Identité Nationale (CIN).
+
+servers:
+  - url: http://localhost:3000
+    description: Local development
+
+tags:
+  - name: CIN
+    description: Carte d'Identité Nationale operations
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    CinOwner:
+      type: object
+      description: Publicly safe fields of the user who owns the CIN.
+      properties:
+        id:
+          type: string
+          example: cmohuw54i0000vfxknr7mtjvq
+        fullName:
+          type: string
+          example: Jane Doe
+        fatherName:
+          type: string
+          example: John Doe
+        motherName:
+          type: string
+          example: Mary Doe
+        dateOfBirth:
+          type: string
+          format: date-time
+          example: "1990-06-15T00:00:00.000Z"
+        placeOfBirth:
+          type: string
+          example: Antananarivo
+        email:
+          type: string
+          format: email
+          example: jane.doe@example.com
+        status:
+          type: string
+          enum: [CONFIRMED]
+          example: CONFIRMED
+        idPhotoUrl:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://xyz.supabase.co/storage/v1/object/public/identity-photos/id-photos/abc.jpg"
+
+    CinResponse:
+      type: object
+      properties:
+        cinId:
+          type: string
+          description: Unique identifier of the CIN record.
+          example: clxyz1234abcd
+        cinPhotoUrl:
+          type: string
+          format: uri
+          description: Public Supabase Storage URL of the uploaded CIN photo.
+          example: "https://xyz.supabase.co/storage/v1/object/public/identity-photos/id-photos/uuid.jpg"
+        issuedAt:
+          type: string
+          format: date-time
+          example: "2026-04-28T10:00:00.000Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2026-04-28T10:00:00.000Z"
+        owner:
+          $ref: "#/components/schemas/CinOwner"
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Error description
+
+paths:
+  /api/cin:
+    post:
+      summary: Create a CIN
+      description: >
+        Upload a photo and create a Carte d'Identité Nationale record for the
+        authenticated user. Only one CIN is allowed per user. The user must have
+        a **CONFIRMED** identity status to access this endpoint.
+      operationId: createCin
+      tags: [CIN]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - cinPhoto
+              properties:
+                cinPhoto:
+                  type: string
+                  format: binary
+                  description: >
+                    The CIN photo to upload. Accepted formats: JPEG, PNG, WebP.
+                    Maximum size: 5 MB.
+      responses:
+        "201":
+          description: CIN created successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: CIN created successfully.
+                  cin:
+                    $ref: "#/components/schemas/CinResponse"
+        "401":
+          description: Missing or invalid JWT token.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                noToken:
+                  summary: No token provided
+                  value:
+                    message: No token provided.
+                expired:
+                  summary: Expired token
+                  value:
+                    message: Token has expired.
+        "403":
+          description: User identity is PENDING or REJECTED — access denied.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                message: "Your identity is still under review. Access is granted only after admin confirmation."
+                status: PENDING
+        "409":
+          description: A CIN already exists for this user.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: A CIN already exists for this user.
+                  cin:
+                    $ref: "#/components/schemas/CinResponse"
+        "413":
+          description: Uploaded file exceeds the 5 MB limit.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                message: File too large. Maximum size is 5 MB.
+        "415":
+          description: Unsupported file type.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                message: Only JPEG, PNG, and WebP images are accepted for ID photos.
+        "422":
+          description: No photo was attached to the request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                message: A CIN photo is required.
+        "500":
+          description: Internal server error (e.g. Supabase upload failure).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    get:
+      summary: Get my CIN
+      description: >
+        Retrieve the CIN record of the currently authenticated user.
+        The user must have a **CONFIRMED** identity status.
+      operationId: getMyCin
+      tags: [CIN]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: CIN record found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cin:
+                    $ref: "#/components/schemas/CinResponse"
+        "401":
+          description: Missing or invalid JWT token.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: User identity is PENDING or REJECTED.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: No CIN found for this user.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                message: No CIN found for this user.
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
