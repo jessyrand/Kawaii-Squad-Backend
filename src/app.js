@@ -4,9 +4,10 @@ import helmet from "helmet";
 import cors from "cors";
 import morgan from "morgan";
 
-import authRoutes from "./routes/auth.routes.js";
-import userRoutes from "./routes/user.routes.js";
+import authRoutes  from "./routes/auth.routes.js";
+import userRoutes  from "./routes/user.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
+import cinRoutes   from "./routes/cin.routes.js";          // ← NEW
 import { errorHandler } from "./middleware/error.middleware.js";
 
 const app = express();
@@ -19,9 +20,10 @@ app.use(express.urlencoded({ extended: true }));
 
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
-app.use("/api/auth", authRoutes);
-app.use("/api/user", userRoutes);
+app.use("/api/auth",  authRoutes);
+app.use("/api/user",  userRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/cin",   cinRoutes);                          // ← NEW
 
 app.use((_req, res) => res.status(404).json({ message: "Route not found" }));
 app.use(errorHandler);
