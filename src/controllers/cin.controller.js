@@ -15,7 +15,7 @@ export async function createCin(req, res, next) {
     const userId = req.user.id;
 
     // Prevent duplicate CIN — one CIN per user
-    const existing = await prisma.cIN.findUnique({ where: { userId } });
+    const existing = await prisma.CIN.findUnique({ where: { userId } });
     if (existing) {
       return res.status(409).json({
         message: "A CIN already exists for this user.",
@@ -34,7 +34,7 @@ export async function createCin(req, res, next) {
       req.file.mimetype
     );
 
-    const cin = await prisma.cIN.create({
+    const cin = await prisma.CIN.create({
       data: {
         userId,
         cinPhotoUrl,
@@ -56,7 +56,7 @@ export async function createCin(req, res, next) {
 // ---------------------------------------------------------------------------
 export async function getMyCin(req, res, next) {
   try {
-    const cin = await prisma.cIN.findUnique({ where: { userId: req.user.id } });
+    const cin = await prisma.CIN.findUnique({ where: { userId: req.user.id } });
 
     if (!cin) {
       return res.status(404).json({ message: "No CIN found for this user." });
