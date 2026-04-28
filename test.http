@@ -1,0 +1,150 @@
+### Variable Definitions
+@baseUrl = http://localhost:3000
+@adminSecret = change-me-to-another-long-random-string
+@userEmail = hei.iloniaina@gmail.com
+@adminEmail = ilorandrianasolo4@gmail.com
+@password = Password123!
+
+# =============================================================================
+# HEALTH CHECK
+# =============================================================================
+
+### 1. Health Check [cite: 11]
+GET {{baseUrl}}/health
+Accept: application/json
+
+# =============================================================================
+# BOOTSTRAPPING & ADMIN ACTIONS
+# =============================================================================
+
+### 2. Create First Admin (Using Master Secret) [cite: 36, 37]
+POST {{baseUrl}}/api/admin/create
+x-admin-secret: {{adminSecret}}
+Content-Type: application/json
+
+{
+  "fullName": "System Admin",
+  "fatherName": "Root",
+  "motherName": "Kernel",
+  "dateOfBirth": "1980-01-01",
+  "placeOfBirth": "Data Center",
+  "email": "{{adminEmail}}",
+  "password": "{{password}}"
+}
+
+### 3. Admin Login [cite: 23]
+# @name adminLogin
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{password}}"
+}
+
+### Save Admin Token
+@adminToken = {{adminLogin.response.body.token}}
+
+# =============================================================================
+# USER LIFECYCLE
+# =============================================================================
+
+### 4. User Registration [cite: 12, 13]
+# Note: This uses multipart/form-data for the ID photo [cite: 14, 18]
+POST {{baseUrl}}/api/auth/register
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="fullName"
+
+Jane Doe
+--WebAppBoundary
+Content-Disposition: form-data; name="fatherName"
+
+John Doe
+--WebAppBoundary
+Content-Disposition: form-data; name="motherName"
+
+Mary Doe
+--WebAppBoundary
+Content-Disposition: form-data; name="dateOfBirth"
+
+1990-06-15
+--WebAppBoundary
+Content-Disposition: form-data; name="placeOfBirth"
+
+Nairobi
+--WebAppBoundary
+Content-Disposition: form-data; name="email"
+
+{{userEmail}}
+--WebAppBoundary
+Content-Disposition: form-data; name="password"
+
+{{password}}
+--WebAppBoundary
+Content-Disposition: form-data; name="idPhoto"; filename="id.jpg"
+Content-Type: image/jpeg
+
+< ./image.jpeg
+--WebAppBoundary--
+
+### 5. Attempt User Login (Should fail with 403 - PENDING) [cite: 24, 29]
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{userEmail}}",
+  "password": "{{password}}"
+}
+
+# =============================================================================
+# ADMIN REVIEW PROCESS
+# =============================================================================
+
+### 6. List Pending Identities [cite: 44, 45]
+GET {{baseUrl}}/api/admin/identities/pending?page=1&limit=10
+Authorization: Bearer {{adminToken}}
+
+### 7. Get Specific User Details (Replace {id} with actual ID from step 6) [cite: 51, 52]
+@userId = cmohuw54i0000vfxknr7mtjvq
+GET {{baseUrl}}/api/admin/identities/{{userId}}
+Authorization: Bearer {{adminToken}}
+
+### 8. Approve User [cite: 53]
+PATCH {{baseUrl}}/api/admin/identities/{{userId}}/approve
+Authorization: Bearer {{adminToken}}
+
+### 9. OR Reject User (Comment out step 8 if testing rejection) [cite: 56, 57]
+PATCH {{baseUrl}}/api/admin/identities/{{userId}}/reject
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "reason": "The uploaded photo does not clearly show the document."
+}
+
+# =============================================================================
+# POST-APPROVAL ACCESS
+# =============================================================================
+
+### 10. User Login (Should now succeed) [cite: 26, 27]
+# @name userLogin
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{userEmail}}",
+  "password": "{{password}}"
+}
+
+### Save User Token
+@userToken = {{userLogin.response.body.token}}
+
+### 11. Get Current User Profile [cite: 31, 33]
+GET {{baseUrl}}/api/user/profile
+Authorization: Bearer {{userToken}}
+
+### 12. Check Identity Status (Polling) [cite: 34, 35]
+GET {{baseUrl}}/api/user/status
+Authorization: Bearer {{userToken}}

@@ -1,8 +1,15 @@
+// =============================================================================
+// src/controllers/auth.controller.js — Register & Login
+// =============================================================================
+
 import bcrypt from "bcryptjs";
 import prisma from "../utils/prisma.js";
 import { signToken } from "../utils/jwt.js";
 import { uploadIdPhoto } from "../utils/supabase.js";
 
+// ---------------------------------------------------------------------------
+// Helper — strip sensitive fields before returning user data to the client
+// ---------------------------------------------------------------------------
 function sanitizeUser(user) {
   const { password, ...safe } = user;
   return safe;
@@ -69,6 +76,7 @@ export async function login(req, res, next) {
 
     const user = await prisma.user.findUnique({ where: { email } });
 
+    // Use a generic message to prevent user enumeration
     const INVALID_MSG = "Invalid email or password.";
 
     if (!user) return res.status(401).json({ message: INVALID_MSG });
