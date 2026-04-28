@@ -1,6 +1,4 @@
-Voici une version améliorée, plus claire et professionnelle de ton README 👇
 
----
 
 # 🚀 Setup & Migration Guide
 
